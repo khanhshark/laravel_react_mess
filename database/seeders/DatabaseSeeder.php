@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             $group = Group::factory()->create(['owner_id' =>1]); 
             $user = User::inRandomOrder()->limit(rand(2,5))->pluck('id'); //! tạo ngẫu nhiêu 1 số lượng người dùng
             $group->users()->attach(array_unique([1,...$user])); //! gán người dùng vào nhóm 
+            
         }
         Messenger::factory(1000)->create();
         $message  = Messenger::whereNull('group_id')->orderBy('created_at')->get();
@@ -55,10 +56,10 @@ class DatabaseSeeder extends Seeder
 
             return [
                 'user_id1' => $groupedMessages->first()->sender_id,
-                'user_id2' => $groupedMessages->first()->receiver,
+                'user_id2' => $groupedMessages->first()->receiver_id,
                 'last_message_id' => $groupedMessages->last()->id,
-                'created_at' => new Carbon(),
-                'updated_at' => new Carbon(),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ];
         })->values(); //! values bỏ đi cái chỉ mục :
         
@@ -74,6 +75,19 @@ class DatabaseSeeder extends Seeder
         */
 
         Conversation::insertOrIgnore($conversation->toArray());
-       
-    }
+       // Lấy tin nhắn cuối cùng của từng nhóm và cập nhật vào bảng groups
+        $lastMessages = Messenger::whereNotNull('group_id')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->groupBy('group_id')
+                ->map(function ($groupMessages) {
+                    return $groupMessages->first(); // Tin nhắn mới nhất trong nhóm
+                });
+
+        foreach ($lastMessages as $groupId => $lastMessage) {
+        Group::where('id', $groupId)->update([
+            'last_message_id' => $lastMessage->id,
+        ]);
+        }
+            }
 }

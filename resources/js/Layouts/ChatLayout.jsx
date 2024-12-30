@@ -1,4 +1,6 @@
 import TextInput from "@/Components/TextInput";
+import ConsversationItem from "@/Components/App/ConversationItem";
+import { PencilSquareIcon } from "@heroicons/react/24/solid";
 import { usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
@@ -11,7 +13,7 @@ const ChatLayout = ({ children }) => {
     const [sortedConversations, setSortedConversations] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState({});
     const isuserOnline = (userId) => onlineUsers[userId];
-    const onSearch = (ev) =>{
+    const onsearch = (ev) =>{
         const search = ev.target.value ? ev.target.value.toLowerCase() : '';
         setLocalConversations(
             conversations.filter(
@@ -22,8 +24,10 @@ const ChatLayout = ({ children }) => {
         );
 
     }
+
     console.log("conversations", conversations);
     console.log("selectedConversations", selectedConversations);
+
     useEffect(() => {
         setSortedConversations(
             localConversations.sort(
@@ -50,7 +54,7 @@ const ChatLayout = ({ children }) => {
             //! 0 có nghĩa là a và b giữ nguyên
             else return 0;
         }
-    ));
+    )); 
     }, [localConversations]);
     useEffect(() => {
         setLocalConversations(conversations);
@@ -89,6 +93,7 @@ const ChatLayout = ({ children }) => {
         };
     }, []); // Chỉ chạy một lần khi thành phần được mount
 
+    
     return <>
         <div className="flex-1 w-full flex overflow-hidden">
            <div className={`transition-all w-full sm:w-[220px] md :w-[300px] bg-slate-800
@@ -98,7 +103,7 @@ const ChatLayout = ({ children }) => {
                     My Converations
                     <div className="tooltip tooltip-left" data-tip ="Create new Group">
                     <button className="text-gray-400 hover:text-gray-200" >
-                        {/* <PencilSquareIcon className="w-4 h-4 inline-block ml-2"/> */}
+                        <PencilSquareIcon className="w-4 h-4 inline-block ml-2"/>
                     </button>
                     </div>
                 </div>
@@ -106,8 +111,14 @@ const ChatLayout = ({ children }) => {
                     <TextInput onKeyUp={onsearch} placeholder="Filter users and groups" className="w-full"/>
                 </div>
                 <div  className="flex-1 overflow-auto">
-                    {sortedConversations   && sortedConversations.map(conversation =>(
-                        <ConversationItem key ={`${conversation.is_group ?"group_":"user_"}${conversation.id}`} conversation = {conversation} online ={!!isuserOnline(conversation.id)} />
+                    {sortedConversations  &&  sortedConversations.map(conversation =>(
+                      
+                        <ConsversationItem 
+                        key={`${conversation.is_group ? "group_" : "user_"}${conversation.id}`} 
+                        Conversation={conversation} 
+                        online={!!isuserOnline(conversation.id)} 
+                      />
+                      
                     ))}
                 </div>
            </div>
